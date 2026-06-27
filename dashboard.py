@@ -263,8 +263,6 @@ with st.sidebar:
                 )
                 data = response.json()
 
-            # Debug — show raw response so we can see what's wrong
-                st.write("Raw response:", data)
 
                 meta = data.get("autopilot_metadata", {})
                 answer = data["choices"][0]["message"]["content"]
@@ -289,4 +287,3 @@ with st.sidebar:
 
             except Exception as e:
                 st.error(f"Error: {e}")
-                st.write("Raw response:", response.text)
