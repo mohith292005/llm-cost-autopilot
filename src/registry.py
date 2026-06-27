@@ -9,7 +9,12 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
+try:
+    import streamlit as st
+    for key, value in st.secrets.items():
+        os.environ.setdefault(key, value)
+except Exception:
+    pass
 
 @dataclass
 class ModelConfig:

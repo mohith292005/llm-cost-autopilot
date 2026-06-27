@@ -11,8 +11,13 @@ import sys
 sys.path.insert(0, ".")
 
 from src.database import AsyncSessionLocal, RequestLog, get_stats, init_db
-
-
+from dotenv import load_dotenv
+load_dotenv()
+try:
+    for key, value in st.secrets.items():
+        os.environ.setdefault(key, value)
+except Exception:
+    pass
 def run_async(coro):
     loop = asyncio.new_event_loop()
     try:
