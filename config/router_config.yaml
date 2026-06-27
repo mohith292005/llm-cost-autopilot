@@ -1,0 +1,17 @@
+tiers:
+  1:
+    model_id: "openai/gpt-4o-mini"
+    label: "Simple"
+    description: "Formatting, extraction, classification, short Q&A"
+  2:
+    model_id: "openai/gpt-4o-mini"
+    label: "Moderate"
+    description: "Summarization, structured analysis, multi-paragraph writing"
+  3:
+    model_id: "openai/gpt-4o-mini"
+    label: "Complex"
+    description: "Multi-step reasoning, code generation, architecture decisions"
+
+evaluator:
+  model_id: "openai/gpt-4o-mini"
+  min_acceptable_score: 3

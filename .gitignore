@@ -1,0 +1,25 @@
+# Virtual environment
+venv/
+
+# Environment variables (NEVER commit this)
+.env
+
+# Database
+autopilot.db
+
+# Trained model (will retrain on deploy)
+classifier.joblib
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# VS Code
+.vscode/
+
+# Docker
+docker-compose.override.yml
+.streamlit/secrets.toml

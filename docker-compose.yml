@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+
+  # ── FastAPI Gateway ──────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: autopilot-api
+    command: uvicorn src.router:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////data/autopilot.db
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - db_data:/data
+      - ./config:/app/config
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  # ── Streamlit Dashboard ──────────────────────────────────────────────────
+  dashboard:
+    build: .
+    container_name: autopilot-dashboard
+    command: streamlit run dashboard.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////data/autopilot.db
+      - OLLAMA_HOST=http://ollama:11434
+      - API_HOST=http://api:8000
+    volumes:
+      - db_data:/data
+      - ./config:/app/config
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ── Ollama (Local LLM Server) ────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama
+    container_name: autopilot-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    driver: local
+  ollama_data:
+    driver: local
