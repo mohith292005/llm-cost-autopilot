@@ -252,38 +252,52 @@ with st.sidebar:
         st.error(f"Could not load config: {e}")
     st.caption(f"Last updated: {datetime.now().strftime('%H:%M:%S')}")
     if submitted and user_input.strip():
-        with st.spinner("Routing request..."):
-            try:
-                import httpx
-                api_host = os.getenv("API_HOST", "http://localhost:8000")
-                response = httpx.post(
-                f"{api_host}/v1/chat/completions",
-                    json={"messages": [{"role": "user", "content": user_input}]},
-                    timeout=60.0,
+        if submitted and user_input.strip():
+    with st.spinner("Routing request..."):
+        try:
+            from src.classifier import get_classifier
+            from src.registry import MODEL_REGISTRY, send_request
+            import yaml
+
+            clf = get_classifier()
+            tier, confidence = clf.predict(user_input)
+
+            with open("config/router_config.yaml") as f:
+                config = yaml.safe_load(f)
+
+            tier_config = config["tiers"].get(tier, config["tiers"][2])
+            routed_model_id = tier_config["model_id"]
+            model_config = MODEL_REGISTRY.get(routed_model_id)
+
+            if not model_config:
+                st.error(f"Model {routed_model_id} not in registry.")
+            else:
+                response = run_async(send_request(
+                    prompt=user_input,
+                    model_config=model_config,
+                ))
+
+                baseline = MODEL_REGISTRY["openai/gpt-4o"]
+                baseline_cost = baseline.calculate_cost(
+                    response.input_tokens, response.output_tokens
                 )
-                data = response.json()
-
-
-                meta = data.get("autopilot_metadata", {})
-                answer = data["choices"][0]["message"]["content"]
+                savings = baseline_cost - response.cost_usd
 
                 tier_colors = {1: "🟢", 2: "🟡", 3: "🔴"}
-                tier = meta.get("complexity_tier", "?")
-
                 st.success("Response received!")
 
                 col_a, col_b, col_c, col_d = st.columns(4)
                 with col_a:
-                    st.metric("Tier", f"{tier_colors.get(tier, '?')} {meta.get('tier_label', '?')}")
+                    st.metric("Tier", f"{tier_colors.get(tier, '?')} {tier_config['label']}")
                 with col_b:
-                    st.metric("Model Used", meta.get("routed_model", "?").split("/")[-1])
+                    st.metric("Model", routed_model_id.split("/")[-1])
                 with col_c:
-                    st.metric("Actual Cost", f"${meta.get('actual_cost_usd', 0):.6f}")
+                    st.metric("Actual Cost", f"${response.cost_usd:.6f}")
                 with col_d:
-                    st.metric("Saved vs GPT-4o", f"${meta.get('savings_usd', 0):.6f}")
+                    st.metric("Saved vs GPT-4o", f"${savings:.6f}")
 
                 st.markdown("**Response:**")
-                st.markdown(answer)
+                st.markdown(response.content)
 
-            except Exception as e:
-                st.error(f"Error: {e}")
+        except Exception as e:
+            st.error(f"Error: {e}")
