@@ -1,6 +1,10 @@
 # LLM Cost Autopilot
 
 > Intelligent LLM routing layer — automatically sends every prompt to the cheapest capable model, saving up to 95% on AI costs.
+## 🚀 Live Demo
+
+**[Try it live → llm-cost-autopilot.streamlit.app](https://llm-cost-autopilot-c2o9n6app5udbnxugnk8sqc.streamlit.app/)**
+
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat&logo=fastapi&logoColor=white)
